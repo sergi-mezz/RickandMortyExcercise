@@ -1,8 +1,5 @@
 package com.mezzyservices.rickmorty.navigation
 
-import android.app.Activity
-import android.app.Fragment
-import android.content.Context
 import android.widget.Toast
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
@@ -17,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.mezzyservices.rickmorty.ui.CharacterDetailScreen
 import com.mezzyservices.rickmorty.ui.CharacterListScreen
+import com.mezzyservices.rickmorty.ui.CharacterLocationScreen
 import com.mezzyservices.rickmorty.ui.FavouriteEpisodesScreen
 import kotlinx.serialization.Serializable
 
@@ -29,6 +27,9 @@ data class CharacterDetail(val characterId: Int?)
 
 @Serializable
 object FavouriteEpisodes
+
+@Serializable
+object CharacterLocation
 
 
 @Composable
@@ -47,9 +48,11 @@ fun AppNavGraph(
         }
         composable<CharacterDetail> { backStackEntry ->
             val detail = backStackEntry.toRoute<CharacterDetail>()
-            CharacterDetailScreen(detail.characterId)
+            CharacterDetailScreen(detail.characterId) { navController.navigate(CharacterLocation ) }
         }
         composable<FavouriteEpisodes> { FavouriteEpisodesScreen() }
+
+        composable<CharacterLocation> { CharacterLocationScreen() }
     }
 }
 
