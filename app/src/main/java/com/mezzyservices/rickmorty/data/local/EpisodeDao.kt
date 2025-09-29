@@ -12,9 +12,6 @@ interface EpisodeDao {
     @Query("SELECT * FROM episode")
     suspend fun getAll(): List<Episode>
 
-    @Query("SELECT * FROM episode WHERE isFavourite == 1")
-    suspend fun getFavouriteEpisodes(): List<Episode>
-
     @Query("SELECT * FROM Episode WHERE id IN (:episodes)")
     suspend fun getEpisodesWithCharacter(episodes: List<Int>): List<Episode>
 

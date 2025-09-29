@@ -7,9 +7,12 @@ import com.google.gson.GsonBuilder
 import com.mezzyservices.rickmorty.data.local.AppDatabase
 import com.mezzyservices.rickmorty.data.local.CharacterDao
 import com.mezzyservices.rickmorty.data.local.EpisodeDao
+import com.mezzyservices.rickmorty.data.local.FavouriteDao
 import com.mezzyservices.rickmorty.data.remote.RickMortyApi
 import com.mezzyservices.rickmorty.data.repository.CharacterRepository
 import com.mezzyservices.rickmorty.data.repository.EpisodeRepository
+import com.mezzyservices.rickmorty.data.repository.FavouriteRepository
+import com.mezzyservices.rickmorty.usecases.CheckCharacterUseCase
 import com.mezzyservices.rickmorty.usecases.CheckEpisodeUseCase
 import com.mezzyservices.rickmorty.usecases.GetCharacterUseCase
 import com.mezzyservices.rickmorty.usecases.GetEpisodeListUseCase
@@ -59,6 +62,10 @@ object AppModule {
     @Provides
     fun provideEpisodeDao(db: AppDatabase) = db.episodeDao()
 
+    @Singleton
+    @Provides
+    fun provideFavouriteDao(db: AppDatabase) = db.favouriteDao()
+
     @Provides
     fun provideCharacterRepository(rickMortyApi: RickMortyApi, characterDao: CharacterDao) =
         CharacterRepository(rickMortyApi, characterDao)
@@ -67,6 +74,12 @@ object AppModule {
     @Provides
     fun provideEpisodeRepository(rickMortyApi: RickMortyApi, episodeDao: EpisodeDao) =
         EpisodeRepository(episodeDao, rickMortyApi)
+
+    @Singleton
+    @Provides
+    fun providesFavouriteRepository(favouriteDao: FavouriteDao) =
+        FavouriteRepository(favouriteDao)
+
 
     @Singleton
     @Provides
@@ -82,5 +95,10 @@ object AppModule {
     @Provides
     fun provideCheckEpisodeUseCase(episodeRepository: EpisodeRepository) =
         CheckEpisodeUseCase(episodeRepository)
+
+    @Singleton
+    @Provides
+    fun provideCheckCharacterUseCase(favouriteRepository: FavouriteRepository) =
+        CheckCharacterUseCase(favouriteRepository)
 
 }

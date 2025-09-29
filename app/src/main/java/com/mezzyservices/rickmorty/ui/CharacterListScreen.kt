@@ -1,6 +1,5 @@
 package com.mezzyservices.rickmorty.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,9 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarDefaults.InputField
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -43,7 +40,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.compose.AsyncImage
 import com.mezzyservices.rickmorty.data.model.Character
-import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
 
 
@@ -100,7 +96,7 @@ fun CharacterListScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         items(filteredItems.count()) { index ->
-                            CharacterCard(filteredItems[index], onCardClicked = {
+                            EpisodeCard(filteredItems[index], onCardClicked = {
                                 onCardClicked(filteredItems[index].id!!)
                             })
                         }
@@ -154,7 +150,7 @@ fun TopAppBar(
 }
 
 @Composable
-fun CharacterCard(character: Character, onCardClicked: () -> Unit) {
+fun EpisodeCard(character: Character, onCardClicked: () -> Unit) {
     Card(modifier = Modifier
         .padding(5.dp)
         .clickable(onClick = { onCardClicked() })) {

@@ -3,8 +3,8 @@ package com.mezzyservices.rickmorty.ui
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mezzyservices.rickmorty.data.model.Episode
-import com.mezzyservices.rickmorty.data.repository.EpisodeRepository
+import com.mezzyservices.rickmorty.data.local.FavouriteCharacter
+import com.mezzyservices.rickmorty.data.repository.FavouriteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -12,12 +12,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FavouriteEpisodesViewModel @Inject constructor(
-    val episodeRepository: EpisodeRepository
+    val favouriteRepository: FavouriteRepository
 ): ViewModel() {
 
 
     val command = MutableLiveData<Command>(Command.Loading)
-    var favouriteEpisodeList = listOf<Episode>()
+    var favouriteCharacterList = listOf<FavouriteCharacter>()
 
     fun getEpisodes() {
 
@@ -26,7 +26,7 @@ class FavouriteEpisodesViewModel @Inject constructor(
         viewModelScope.launch {
 
             try {
-                favouriteEpisodeList = episodeRepository.getFavouriteEpisodes()
+                favouriteCharacterList = favouriteRepository.getAll()
                 command.postValue(Command.Success)
             } catch (e: Exception) {
                 command.postValue(Command.Error(e.message ?: "sin info"))

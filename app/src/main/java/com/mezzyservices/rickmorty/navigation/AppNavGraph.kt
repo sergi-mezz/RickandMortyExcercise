@@ -15,7 +15,7 @@ import androidx.navigation.toRoute
 import com.mezzyservices.rickmorty.ui.CharacterDetailScreen
 import com.mezzyservices.rickmorty.ui.CharacterListScreen
 import com.mezzyservices.rickmorty.ui.CharacterLocationScreen
-import com.mezzyservices.rickmorty.ui.FavouriteEpisodesScreen
+import com.mezzyservices.rickmorty.ui.FavouriteCharactersScreen
 import kotlinx.serialization.Serializable
 
 
@@ -50,7 +50,7 @@ fun AppNavGraph(
             val detail = backStackEntry.toRoute<CharacterDetail>()
             CharacterDetailScreen(detail.characterId) { navController.navigate(CharacterLocation ) }
         }
-        composable<FavouriteEpisodes> { FavouriteEpisodesScreen() }
+        composable<FavouriteEpisodes> { FavouriteCharactersScreen() }
 
         composable<CharacterLocation> { CharacterLocationScreen() }
     }

@@ -9,7 +9,6 @@ class CharacterRepository @Inject constructor(
     private val rickMortyApi: RickMortyApi,
     private val characterDao: CharacterDao
 ) {
-
     suspend fun getCharacter(characterId: Int): Character {
 
         val localCharacter = characterDao.get(characterId)

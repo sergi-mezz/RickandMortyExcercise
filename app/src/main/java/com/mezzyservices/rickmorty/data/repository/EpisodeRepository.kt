@@ -40,13 +40,6 @@ class EpisodeRepository @Inject constructor(
     }
     suspend fun getEpisodesByCharacter(episodesIdList: List<Int>) = episodeDao.getEpisodesWithCharacter(episodesIdList)
 
-    suspend fun addFavouriteEpisode(episode: Episode) {
-
-        val favourite = episode.isFavourite
-        episodeDao.update(episode.apply {
-            isFavourite = !favourite
-        })
-    }
     suspend fun addWatchedEpisode(episode: Episode) {
 
         val watched = episode.alreadyWatched
@@ -54,6 +47,4 @@ class EpisodeRepository @Inject constructor(
             alreadyWatched = !watched
         })
     }
-
-    suspend fun getFavouriteEpisodes() = episodeDao.getFavouriteEpisodes()
 }

@@ -8,7 +8,6 @@ data class Episode(
     @PrimaryKey val id: Int?,
     val name: String?,
     val url: String?,
-    var isFavourite: Boolean = false,
     var alreadyWatched: Boolean = false,
     val characters: List<String>?,
 )

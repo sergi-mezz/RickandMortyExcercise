@@ -1,6 +1,7 @@
 package com.mezzyservices.rickmorty.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -32,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
@@ -62,7 +65,7 @@ fun Content(viewModel: CharacterDetailViewModel, onWatchMapClicked: () -> Unit) 
         }
 
         is CharacterDetailViewModel.Command.Success -> {
-            CharacterCard(viewModel, { onWatchMapClicked() })
+            CharacterCard(viewModel) { onWatchMapClicked() }
         }
 
         null -> {}
@@ -73,14 +76,28 @@ fun Content(viewModel: CharacterDetailViewModel, onWatchMapClicked: () -> Unit) 
 @Composable
 fun CharacterCard(viewModel: CharacterDetailViewModel, onWatchMapClicked: () -> Unit) {
 
+    val favourite by viewModel.isFavourite.observeAsState()
+
     Card(modifier = Modifier.padding(top = 35.dp, start = 5.dp, end = 5.dp, bottom = 35.dp)) {
         Column(modifier = Modifier.fillMaxWidth().padding(2.dp)) {
             Row(verticalAlignment = Alignment.Top) {
-                AsyncImage(
-                    modifier = Modifier.size(125.dp),
-                    model = viewModel.character.image,
-                    contentDescription = ""
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    AsyncImage(
+                        modifier = Modifier.size(125.dp),
+                        model = viewModel.character.image,
+                        contentDescription = ""
+                    )
+                    IconButton(
+                        onClick = { viewModel.checkFavourite() }
+                    ) {
+                        Icon(
+                            imageVector = if(favourite == true) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            tint = if(favourite == true) Color.Red else Color.LightGray,
+                            contentDescription = ""
+                        )
+                    }
+                }
+
 
                 Column(modifier = Modifier.padding(start = 5.dp)) {
                     Text(viewModel.character.gender ?: "")
@@ -92,18 +109,19 @@ fun CharacterCard(viewModel: CharacterDetailViewModel, onWatchMapClicked: () -> 
                         shape = RectangleShape,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray, contentColor = Color.White)
                     ) {
-                        Text("Ver en mapa")
+                        Text("Ver en\nmapa")
                     }
                 }
             }
 
-            Text(text = "Capitulos:", modifier = Modifier.padding(5.dp))
-
-            LazyColumn{
+            LazyColumn {
+                item {
+                    Text(text = "Capitulos:", modifier = Modifier.padding(5.dp), fontWeight = FontWeight.Bold)
+                }
                 items(
                     viewModel.episodeList
                 ) { episode: Episode ->
-                    EpisodeCard(episode, { viewModel.addWatchedEpisode(episode) } , { viewModel.addFavouriteEpisode(episode) } )
+                    EpisodeCard(episode) { viewModel.addWatchedEpisode(episode) }
                 }
             }
         }
@@ -111,34 +129,24 @@ fun CharacterCard(viewModel: CharacterDetailViewModel, onWatchMapClicked: () -> 
 }
 
 @Composable
-fun EpisodeCard(episode: Episode, onClickCheck: () -> Unit, onClickFavourite: () -> Unit) {
+fun EpisodeCard(episode: Episode, onClickCheck: () -> Unit) {
 
     Card(border = BorderStroke(1.dp, Color.LightGray), modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
 
-        var favourite by rememberSaveable { mutableStateOf( episode.isFavourite ) }
         var watched by rememberSaveable { mutableStateOf( episode.alreadyWatched ) }
 
-        Column(modifier = Modifier.padding(2.dp)) {
-            Text("Episodio " + episode.id.toString() + ".   "  + episode.name!!)
-            Row {
-                IconButton(onClick = {
-                    onClickCheck()
-                    watched = !watched
-                }) {
-                    Icon(
-                        imageVector = if(watched) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
-                        contentDescription = ""
-                    )
-                }
-                IconButton(onClick = {
-                    onClickFavourite()
-                    favourite = !favourite
-                }) {
-                    Icon(
-                        imageVector = if(favourite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = ""
-                    )
-                }
+        Row(modifier = Modifier.fillMaxWidth().padding(2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(text = "Episodio " + episode.id.toString() + " "  + episode.name!!, modifier = Modifier.width(200.dp))
+            IconButton(onClick = {
+                onClickCheck()
+                watched = !watched
+            },
+                modifier = Modifier.padding(end = 20.dp)) {
+                Icon(
+                    imageVector = if(watched) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
+                    tint = if(watched) Color.Green else Color.LightGray,
+                    contentDescription = "",
+                )
             }
         }
     }
