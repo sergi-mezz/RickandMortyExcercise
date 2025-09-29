@@ -10,6 +10,7 @@ import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.mezzyservices.rickmorty.data.local.AppDatabase
 import com.mezzyservices.rickmorty.data.model.Character
+import com.mezzyservices.rickmorty.data.model.Info
 import com.mezzyservices.rickmorty.data.remote.RickMortyApi
 import java.io.IOException
 
@@ -20,6 +21,7 @@ class CharacterRemoteMediator(
 ) : RemoteMediator<Int, Character>() {
 
     val characterDao = database.characterDao()
+    val pageInfoDao = database.infoDao()
 
     @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     override suspend fun load(
@@ -29,38 +31,46 @@ class CharacterRemoteMediator(
         return try {
 
             val loadKey = when (loadType) {
-                LoadType.REFRESH -> null
+                LoadType.REFRESH -> 1
                 LoadType.PREPEND ->
-                    return MediatorResult.Success(endOfPaginationReached = true)
+                    return MediatorResult.Success(endOfPaginationReached = false)
                 LoadType.APPEND -> {
-                    val lastItem = state.lastItemOrNull()
+                    val page = database.withTransaction {
+                        pageInfoDao.get()
+                    }
 
-                    if (lastItem == null) {
+                    if (page.next == null) {
                         return MediatorResult.Success(
                             endOfPaginationReached = true
                         )
                     }
 
-                    lastItem.id?.div(20)?.plus(1) ?: 1
+                    page.next.substringAfterLast("=").toInt()
                 }
             }
 
-            val response = apiService.getCharacters(loadKey ?: 1)
+            val response = apiService.getCharacters(loadKey)
 
             database.withTransaction {
                 if (loadType == LoadType.REFRESH) {
+                    pageInfoDao.delete()
                     characterDao.clearAll()
                 }
 
+
+                pageInfoDao.insertOrReplace(response.info)
                 characterDao.insertAll(response.results)
             }
 
             MediatorResult.Success(
-                endOfPaginationReached = response.info.next == null
+                endOfPaginationReached = response.info.next.isNullOrEmpty()
             )
         } catch (e: IOException) {
             MediatorResult.Error(e)
         } catch (e: HttpException) {
+            MediatorResult.Error(e)
+        } catch (e: Exception) {
+            val x = e.message
             MediatorResult.Error(e)
         }
     }

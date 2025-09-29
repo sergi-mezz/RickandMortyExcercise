@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.sharp.Favorite
@@ -38,8 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
 import com.mezzyservices.rickmorty.data.model.Character
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -49,17 +52,8 @@ fun CharacterListScreen(
     onFavouritesClicked: () -> Unit
 ) {
     val viewModel = hiltViewModel<CharacterListViewModel>()
-    val characters = viewModel.characterListFlow.collectAsLazyPagingItems()
-    var filterQuery by remember { mutableStateOf("") }
-    val filteredItems = remember(characters.itemSnapshotList, filterQuery) {
-        if (filterQuery.isEmpty()) {
-            characters.itemSnapshotList.items
-        } else {
-            characters.itemSnapshotList.items.filter { item ->
-                item.name!!.contains(filterQuery, ignoreCase = true)
-            }
-        }
-    }
+    val characters = viewModel.characterListFlow.collectAsLazyPagingItems(Dispatchers.IO)
+    var query by remember { mutableStateOf("") }
 
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
@@ -71,7 +65,7 @@ fun CharacterListScreen(
         val snackBarHostState = remember { SnackbarHostState() }
 
         Scaffold(
-            topBar = { TopAppBar(modifier = Modifier.padding(top = 25.dp), filterQuery, onFavouritesClicked, { filterQuery = it } ) },
+            topBar = { TopAppBar(modifier = Modifier.padding(top = 25.dp), query, onFavouritesClicked, { query = it } ) },
             snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
         ) { innerPadding ->
 
@@ -89,16 +83,31 @@ fun CharacterListScreen(
                 }
 
                 else -> {
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        items(filteredItems.count()) { index ->
-                            EpisodeCard(filteredItems[index], onCardClicked = {
-                                onCardClicked(filteredItems[index].id!!)
-                            })
+                    if(query.isEmpty()) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            items(characters.itemCount, characters.itemKey { it.id!! }) { index ->
+                                EpisodeCard(characters[index]!!, onCardClicked = {
+                                    onCardClicked(characters[index]!!.id!!)
+                                })
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            items(characters.itemSnapshotList.items.filter { it.name!!.contains(query, true) }) { it ->
+                                EpisodeCard(it, onCardClicked = {
+                                    onCardClicked(it.id!!)
+                                })
+                            }
                         }
                     }
                 }
@@ -111,7 +120,7 @@ fun CharacterListScreen(
 @Composable
 fun TopAppBar(
     modifier: Modifier,
-    filterQuery: String,
+    query: String,
     onFavouritesClicked: () -> Unit,
     onQueryChanged: (String) -> Unit
 ) {
@@ -120,7 +129,7 @@ fun TopAppBar(
         SearchBar(
             inputField = {
                 InputField(
-                    query = filterQuery,
+                    query = query,
                     onQueryChange = { onQueryChanged(it) },
                     onSearch = {
 

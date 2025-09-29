@@ -1,9 +1,11 @@
 package com.mezzyservices.rickmorty.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import com.mezzyservices.rickmorty.paging.CharacterRemoteMediator
 import com.mezzyservices.rickmorty.data.local.AppDatabase
 import com.mezzyservices.rickmorty.data.remote.RickMortyApi
@@ -22,7 +24,7 @@ class CharacterListViewModel @Inject constructor(
         config = PagingConfig(20),
         remoteMediator = CharacterRemoteMediator(database, rickMortyApi),
         pagingSourceFactory = { database.characterDao().pagingSource() }
-    ).flow
+    ).flow.cachedIn(viewModelScope)
 
 
 }
