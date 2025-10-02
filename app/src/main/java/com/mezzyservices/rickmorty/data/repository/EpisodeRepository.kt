@@ -38,7 +38,10 @@ class EpisodeRepository @Inject constructor(
 
         }
     }
-    suspend fun getEpisodesByCharacter(episodesIdList: List<Int>) = episodeDao.getEpisodesWithCharacter(episodesIdList)
+    suspend fun getEpisodesByCharacter(episodesIdList: List<Int>): List<Episode> {
+        getEpisodeList()
+        return episodeDao.getEpisodesWithCharacter(episodesIdList)
+    }
 
     suspend fun addWatchedEpisode(episode: Episode) {
 
