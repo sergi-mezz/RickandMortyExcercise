@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -31,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,8 +54,11 @@ fun CharacterListScreen(
     onFavouritesClicked: () -> Unit
 ) {
     val viewModel = hiltViewModel<CharacterListViewModel>()
+    val listState = rememberSaveable(saver = LazyListState.Saver) {
+        LazyListState()
+    }
     val characters = viewModel.characterListFlow.collectAsLazyPagingItems(Dispatchers.IO)
-    var query by remember { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
 
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
@@ -88,7 +93,8 @@ fun CharacterListScreen(
                             modifier = Modifier
                                 .padding(innerPadding)
                                 .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            state = listState
                         ) {
                             items(characters.itemCount, characters.itemKey { it.id!! }) { index ->
                                 EpisodeCard(characters[index]!!, onCardClicked = {
