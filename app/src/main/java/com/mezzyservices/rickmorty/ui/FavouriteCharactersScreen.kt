@@ -11,7 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -34,12 +37,13 @@ fun FavouriteCharactersScreen() {
     viewModel.getEpisodes()
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Content(viewModel: FavouriteEpisodesViewModel) {
 
     val command by viewModel.command.observeAsState()
 
-    when(command) {
+    when (command) {
         is FavouriteEpisodesViewModel.Command.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -51,29 +55,35 @@ fun Content(viewModel: FavouriteEpisodesViewModel) {
         }
 
         is FavouriteEpisodesViewModel.Command.Success -> {
-            LazyColumn(modifier = Modifier.padding(top = 35.dp, start = 5.dp, end = 5.dp, bottom = 35.dp)) {
-
-                item(1) {
-                    Text(text = "Favoritos", fontWeight = FontWeight.Bold)
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("Favoritos") }
+                    )
                 }
-                items(viewModel.favouriteCharacterList) {
-                    EpisodeCard(it)
-                }
+            ) { innerPadding ->
 
+                LazyColumn(modifier = Modifier.padding(innerPadding)) {
+
+                    items(viewModel.favouriteCharacterList) {
+                        CharacterCard(it)
+                    }
+
+                }
             }
         }
 
-        null -> {  }
+        null -> {}
     }
 
 }
 
 @Composable
-fun EpisodeCard(character: FavouriteCharacter) {
+fun CharacterCard(character: FavouriteCharacter) {
 
-    Card(border = BorderStroke(1.dp, Color.LightGray), modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = Modifier.padding(5.dp)) {
 
-        Row(modifier = Modifier.padding(2.dp)) {
+        Row(modifier = Modifier.fillMaxWidth()) {
             AsyncImage(model = character.image, contentDescription = "")
             Text(character.name)
         }
