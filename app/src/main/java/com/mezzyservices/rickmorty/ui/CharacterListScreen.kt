@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import androidx.compose.material3.SearchBarDefaults.InputField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +52,7 @@ import com.mezzyservices.rickmorty.data.model.Character
 import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CharacterListScreen(
     onCardClicked: (Int) -> Unit,
@@ -77,14 +80,16 @@ fun CharacterListScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    modifier = Modifier.padding(top = 5.dp),
-                    query,
-                    onFavouritesClicked,
-                    { query = it },
-                    statusFilterList,
-                    specieFilterList,
-                    { specieFilterSelection = if (it == "Ver todas") "" else it },
-                    { statusFilterSelection = if (it == "Ver todos") "" else it }
+                    title = { Text("Personajes") },
+                    actions = {
+                        IconButton(onClick = { onFavouritesClicked() }) {
+                            Icon(
+                                imageVector = Icons.Sharp.Favorite,
+                                tint = Color.Red,
+                                contentDescription = ""
+                            )
+                        }
+                    }
                 )
             },
             snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
@@ -121,9 +126,21 @@ fun CharacterListScreen(
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
                         state = listState
                     ) {
+
+                        item {
+
+                            TopContent(
+                                query,
+                                { query = it },
+                                statusFilterList,
+                                specieFilterList,
+                                { specieFilterSelection = if (it == "Ver todas") "" else it },
+                                { statusFilterSelection = if (it == "Ver todos") "" else it }
+                            )
+                        }
+
                         if (query.isEmpty() && statusFilterSelection.isEmpty() && specieFilterSelection.isEmpty()) {
                             items(characters.itemCount, characters.itemKey { it.id!! }) { index ->
                                 if (characters[index] != null)
@@ -150,10 +167,8 @@ fun CharacterListScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBar(
-    modifier: Modifier,
+fun TopContent(
     query: String,
-    onFavouritesClicked: () -> Unit,
     onQueryChanged: (String) -> Unit,
     statusFilterList: Set<String>,
     specieFilterList: Set<String>,
@@ -161,15 +176,14 @@ fun TopAppBar(
     onStatusSelected: (String) -> Unit
 ) {
 
-    Column(modifier = modifier) {
+    Column {
         SearchBar(
+            modifier = Modifier.fillMaxWidth(),
             inputField = {
                 InputField(
                     query = query,
                     onQueryChange = { onQueryChanged(it) },
-                    onSearch = {
-
-                    },
+                    onSearch = {},
                     expanded = false,
                     onExpandedChange = { },
                     placeholder = { Text("Busqueda") },
@@ -183,72 +197,57 @@ fun TopAppBar(
             },
             expanded = false,
             onExpandedChange = {},
-        ) {
-
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text("Filtrar por:")
-                Box() {
-                    var expanded by remember { mutableStateOf(false) }
-                    Button(
-                        onClick = { expanded = !expanded }
+            windowInsets = WindowInsets()
+        ) {}
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Filtrar por:  ")
+            Box {
+                var expanded by remember { mutableStateOf(false) }
+                Button(
+                    onClick = { expanded = !expanded }
+                ) {
+                    Text("Estatus")
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
                     ) {
-                        Text("Estatus")
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            statusFilterList.forEach {
-                                DropdownMenuItem(
-                                    text = { Text(it) },
-                                    onClick = {
-                                        expanded = false
-                                        onStatusSelected(it)
-                                    }
-                                )
-                            }
+                        statusFilterList.forEach {
+                            DropdownMenuItem(
+                                text = { Text(it) },
+                                onClick = {
+                                    expanded = false
+                                    onStatusSelected(it)
+                                }
+                            )
                         }
                     }
                 }
-                Box() {
-                    var expanded by remember { mutableStateOf(false) }
-                    Button(
-                        onClick = { expanded = !expanded }
-                    ) {
-                        Text("Especie")
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-
-                            specieFilterList.forEach {
-                                DropdownMenuItem(
-                                    text = { Text(it) },
-                                    onClick = {
-                                        expanded = false
-                                        onSpeciesSelected(it)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-
             }
-            IconButton(onClick = {
-                onFavouritesClicked()
-            }) {
-                Icon(imageVector = Icons.Sharp.Favorite, tint = Color.Red, contentDescription = "")
+            Box {
+                var expanded by remember { mutableStateOf(false) }
+                Button(
+                    onClick = { expanded = !expanded }
+                ) {
+                    Text("Especie")
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+
+                        specieFilterList.forEach {
+                            DropdownMenuItem(
+                                text = { Text(it) },
+                                onClick = {
+                                    expanded = false
+                                    onSpeciesSelected(it)
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
-
 }
 
 @Composable
