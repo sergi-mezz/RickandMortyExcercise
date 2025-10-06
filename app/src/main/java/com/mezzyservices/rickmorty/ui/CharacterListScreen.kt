@@ -1,7 +1,7 @@
 package com.mezzyservices.rickmorty.ui
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,8 +14,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.sharp.Favorite
+import androidx.compose.material.icons.sharp.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -69,6 +70,8 @@ fun CharacterListScreen(
     var statusFilterSelection by remember { mutableStateOf("") }
     var specieFilterSelection by remember { mutableStateOf("") }
 
+    var isSearchBarVisible by remember { mutableStateOf(false) }
+
     val listState = rememberSaveable(saver = LazyListState.Saver) {
         LazyListState()
     }
@@ -86,6 +89,12 @@ fun CharacterListScreen(
                             Icon(
                                 imageVector = Icons.Sharp.Favorite,
                                 tint = Color.Red,
+                                contentDescription = ""
+                            )
+                        }
+                        IconButton(onClick = { isSearchBarVisible = true }) {
+                            Icon(
+                                imageVector = Icons.Sharp.Search,
                                 contentDescription = ""
                             )
                         }
@@ -131,7 +140,12 @@ fun CharacterListScreen(
                             statusFilterList,
                             specieFilterList,
                             { specieFilterSelection = if (it == "Ver todas") "" else it },
-                            { statusFilterSelection = if (it == "Ver todos") "" else it }
+                            { statusFilterSelection = if (it == "Ver todos") "" else it },
+                            isSearchBarVisible,
+                            {
+                                isSearchBarVisible = false
+                                query = ""
+                            }
                         )
 
                         LazyColumn(
@@ -173,32 +187,44 @@ fun TopContent(
     statusFilterList: Set<String>,
     specieFilterList: Set<String>,
     onSpeciesSelected: (String) -> Unit,
-    onStatusSelected: (String) -> Unit
+    onStatusSelected: (String) -> Unit,
+    isSearchBarVisible: Boolean,
+    onSearchBarClosed: () -> Unit
 ) {
 
     Column {
-        SearchBar(
-            modifier = Modifier.fillMaxWidth(),
-            inputField = {
-                InputField(
-                    query = query,
-                    onQueryChange = { onQueryChanged(it) },
-                    onSearch = {},
-                    expanded = false,
-                    onExpandedChange = { },
-                    placeholder = { Text("Busqueda") },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = ""
-                        )
-                    }
-                )
-            },
-            expanded = false,
-            onExpandedChange = {},
-            windowInsets = WindowInsets()
-        ) {}
+        AnimatedVisibility(
+            visible = isSearchBarVisible
+        ) {
+            SearchBar(
+                modifier = Modifier.fillMaxWidth(),
+                inputField = {
+                    InputField(
+                        query = query,
+                        onQueryChange = { onQueryChanged(it) },
+                        onSearch = {},
+                        expanded = false,
+                        onExpandedChange = { },
+                        placeholder = { Text("Busqueda") },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = { onSearchBarClosed() }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+                    )
+                },
+                expanded = false,
+                onExpandedChange = {},
+                windowInsets = WindowInsets(),
+                content = {}
+            )
+        }
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Filtrar por:  ")
             Box {
