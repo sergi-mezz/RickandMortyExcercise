@@ -122,42 +122,42 @@ fun CharacterListScreen(
                     statusFilterList = statusFilterList + tempStatusSet
                     specieFilterList = specieFilterList + tempSpecieSet
 
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxWidth(),
-                        state = listState
+                    Column(
+                        modifier = Modifier.padding(innerPadding)
                     ) {
+                        TopContent(
+                            query,
+                            { query = it },
+                            statusFilterList,
+                            specieFilterList,
+                            { specieFilterSelection = if (it == "Ver todas") "" else it },
+                            { statusFilterSelection = if (it == "Ver todos") "" else it }
+                        )
 
-                        item {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            state = listState
+                        ) {
 
-                            TopContent(
-                                query,
-                                { query = it },
-                                statusFilterList,
-                                specieFilterList,
-                                { specieFilterSelection = if (it == "Ver todas") "" else it },
-                                { statusFilterSelection = if (it == "Ver todos") "" else it }
-                            )
-                        }
-
-                        if (query.isEmpty() && statusFilterSelection.isEmpty() && specieFilterSelection.isEmpty()) {
-                            items(characters.itemCount, characters.itemKey { it.id!! }) { index ->
-                                if (characters[index] != null)
-                                    CharacterCard(characters[index]!!, onCardClicked = {
-                                        onCardClicked(characters[index]!!.id!!)
+                            if (query.isEmpty() && statusFilterSelection.isEmpty() && specieFilterSelection.isEmpty()) {
+                                items(characters.itemCount, characters.itemKey { it.id!! }) { index ->
+                                    if (characters[index] != null)
+                                        CharacterCard(characters[index]!!, onCardClicked = {
+                                            onCardClicked(characters[index]!!.id!!)
+                                        })
+                                }
+                            } else
+                                items(characters.itemSnapshotList.items.filter {
+                                    it.name!!.contains(query, true) && it.species!!.contains(
+                                        specieFilterSelection
+                                    ) && it.status!!.contains(statusFilterSelection)
+                                }) { it ->
+                                    CharacterCard(it, onCardClicked = {
+                                        onCardClicked(it.id!!)
                                     })
-                            }
-                        } else
-                            items(characters.itemSnapshotList.items.filter {
-                                it.name!!.contains(query, true) && it.species!!.contains(
-                                    specieFilterSelection
-                                ) && it.status!!.contains(statusFilterSelection)
-                            }) { it ->
-                                CharacterCard(it, onCardClicked = {
-                                    onCardClicked(it.id!!)
-                                })
-                            }
+                                }
+                        }
                     }
                 }
             }
