@@ -12,5 +12,4 @@ class FavouriteRepository(
     suspend fun remove(character: FavouriteCharacter) = favouriteDao.remove(character)
 
     suspend fun getAll() = favouriteDao.getAll()
-
 }

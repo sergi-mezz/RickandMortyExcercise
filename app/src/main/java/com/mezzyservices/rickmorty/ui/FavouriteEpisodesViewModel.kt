@@ -34,6 +34,19 @@ class FavouriteEpisodesViewModel @Inject constructor(
         }
     }
 
+    fun deleteFavourite(character: FavouriteCharacter) {
+
+        viewModelScope.launch {
+            try {
+                favouriteRepository.remove(character)
+                command.postValue(Command.Success)
+            } catch (e: Exception) {
+                command.postValue(Command.Error(e.message ?: "sin info"))
+            }
+        }
+
+    }
+
     sealed class Command {
 
         object Success : Command()

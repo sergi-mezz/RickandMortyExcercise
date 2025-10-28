@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -50,7 +51,15 @@ fun AppNavGraph(
             val detail = backStackEntry.toRoute<CharacterDetail>()
             CharacterDetailScreen(detail.characterId) { navController.navigate(CharacterLocation ) }
         }
-        composable<FavouriteEpisodes> { FavouriteCharactersScreen() }
+        composable<FavouriteEpisodes> { FavouriteCharactersScreen() {
+            navController.navigate(
+                CharacterDetail(it),
+                navOptions = NavOptions.Builder().setPopUpTo<CharacterList>(
+                    inclusive = false,
+                    saveState = false
+                ).build(),
+            )
+        } }
 
         composable<CharacterLocation> { CharacterLocationScreen() }
     }
@@ -68,6 +77,7 @@ fun openFavouritesScreen(navController: NavHostController) {
                 errString: CharSequence
             ) {
                 super.onAuthenticationError(errorCode, errString)
+                navController.navigate(FavouriteEpisodes)
                 Toast.makeText(
                     context.applicationContext,
                     "Authentication error: $errString", Toast.LENGTH_SHORT
